@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Genre {
+  M
+  F
+}
+
+model Church {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  fantasy           String?
+  cnpj              String
+  ie                String              @default("ISENTO")
+  email             String?             @unique
+  phone             String?
+  shepherd          String
+  image             String?
+  active            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  PersonsOnChurches PersonsOnChurches[]
+
+  @@map("Churches")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String?
+  rule      String   @default("member")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  person    Person?  @relation(fields: [personId], references: [id])
+  personId  String?  @db.ObjectId
+
+  @@map("Users")
+}
+
+model Person {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  genre             Genre               @default(M)
+  birth             DateTime?
+  email             String?             @unique
+  active            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  User              User[]
+  PersonsOnChurches PersonsOnChurches[]
+
+  @@map("People")
+}
+
+model PersonsOnChurches {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  person    Person   @relation(fields: [personId], references: [id])
+  church    Church   @relation(fields: [churchId], references: [id])
+  singnedAt DateTime @default(now())
+  singnetBy String
+  personId  String   @db.ObjectId
+  churchId  String   @db.ObjectId
+}
+
+model CellsNetwork {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  color     String?
+  image     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Cell      Cell[]
+
+  @@map("CellsNetworks")
+}
+
+model Cell {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  color            String?
+  image            String?
+  day              String             @default("quarta-feira")
+  hour             String             @default("20:00")
+  method           String             @default("hibrid")
+  leader           String
+  address          String?
+  cellsNetwork     CellsNetwork       @relation(fields: [cellsNetworkId], references: [id])
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  cellsNetworkId   String             @db.ObjectId
+  Visitor          Visitor[]
+  VisitorConverted VisitorConverted[]
+  VisitorBaptized  VisitorBaptized[]
+  VisitorCell      VisitorCell[]
+
+  @@map("Cells")
+}
+
+model VisitorCell {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell     @relation(fields: [cellId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cellId String @db.ObjectId
+
+  @@map("VisitorsOnCells")
+}
+
+model Visitor {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell     @relation(fields: [cellId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cellId           String             @db.ObjectId
+  VisitorConverted VisitorConverted[]
+  VisitorBaptized  VisitorBaptized[]
+
+  @@map("Visitors")
+}
+
+model VisitorConverted {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell?    @relation(fields: [cellId], references: [id])
+  visitor   Visitor? @relation(fields: [visitorId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cellId    String? @db.ObjectId
+  visitorId String? @db.ObjectId
+
+  @@map("VisitorsOnConverteds")
+}
+
+model VisitorBaptized {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell?    @relation(fields: [cellId], references: [id])
+  visitor   Visitor? @relation(fields: [visitorId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cellId    String? @db.ObjectId
+  visitorId String? @db.ObjectId
+
+  @@map("VisitorsOnBaptizeds")
+}
