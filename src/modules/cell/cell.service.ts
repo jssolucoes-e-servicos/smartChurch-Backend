@@ -14,11 +14,29 @@ export class CellService {
   }
 
   async findAll() {
-    return this.prisma.cell.findMany();
+    return this.prisma.cell.findMany({
+      where: {
+        active: true
+      },
+      include: {
+      leader:true,
+      cellsNetwork: {
+        include: {
+          supervisor: true
+        }
+      }
+    }});
   }
 
   async findOne(id:string) {
-    return this.prisma.cell.findUnique({where:{id}});
+    return this.prisma.cell.findUnique({where:{id}, include: {
+      leader:true,
+      cellsNetwork: {
+        include: {
+          supervisor: true
+        }
+      }
+    }});
   }
 
   async update(id:string, data:CellDTO){

@@ -56,6 +56,8 @@ model Person {
   updatedAt         DateTime            @updatedAt
   User              User[]
   PersonsOnChurches PersonsOnChurches[]
+  CellsNetwork      CellsNetwork[]
+  Cell              Cell[]
 
   @@map("People")
 }
@@ -71,14 +73,16 @@ model PersonsOnChurches {
 }
 
 model CellsNetwork {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  color     String?
-  image     String?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Cell      Cell[]
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  color        String?
+  image        String?
+  supervisor   Person?  @relation(fields: [supervisorId], references: [id])
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Cell         Cell[]
+  supervisorId String?  @db.ObjectId
 
   @@map("CellsNetworks")
 }
@@ -91,7 +95,7 @@ model Cell {
   day              String             @default("quarta-feira")
   hour             String             @default("20:00")
   method           String             @default("hibrid")
-  leader           String
+  leader           Person             @relation(fields: [leaderId], references: [id])
   address          String?
   cellsNetwork     CellsNetwork       @relation(fields: [cellsNetworkId], references: [id])
   active           Boolean            @default(true)
@@ -102,6 +106,7 @@ model Cell {
   VisitorConverted VisitorConverted[]
   VisitorBaptized  VisitorBaptized[]
   VisitorCell      VisitorCell[]
+  leaderId         String             @db.ObjectId
 
   @@map("Cells")
 }

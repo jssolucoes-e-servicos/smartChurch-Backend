@@ -6,7 +6,7 @@ export type CellDTO = {
   day: string
   hour: string
   method: string
-  leader: string
+  leaderId: string
   address: string | null
   cellsNetworkId: string
 }

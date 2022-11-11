@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { CellDTO } from 'src/modules/cell/cell.dto';
 import { CellService } from './cell.service';
+import { JwtAuthGuard } from 'src/modules/auth/guard/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('cells')
 export class CellController {
   constructor(private readonly cellService: CellService) {}

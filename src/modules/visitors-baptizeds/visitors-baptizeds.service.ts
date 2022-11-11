@@ -14,8 +14,14 @@ export class VisitorsBaptizedsService {
   }
 
   async findAll() {
-    return this.prisma.visitorBaptized.findMany();
+    return this.prisma.visitorBaptized.findMany({
+      include: {
+      cell:true,
+      visitor:true
+    }});
   }
+
+  
 
   async findOne(id:string) {
     return this.prisma.visitorBaptized.findUnique({where:{id}});
