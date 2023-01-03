@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/databases/PrismaService';
+import { RegisterNotExists } from 'src/utils/results';
 import { CellDTO } from './cell.dto';
 @Injectable()
 export class CellService {
   constructor(private prisma: PrismaService){}
 
   async create(data:CellDTO){
-    const cell = await this.prisma.cell.create({
+    const result = await this.prisma.cell.create({
       data,
     })
 
-    return cell;
+    return result;
   }
 
   async findAll() {
@@ -19,10 +20,24 @@ export class CellService {
         active: true
       },
       include: {
-      leader:true,
+      leader: {
+         select: {
+              name: true,
+              birth: true,
+              genre: true,
+              photo: true
+            }
+      },
       cellsNetwork: {
         include: {
-          supervisor: true
+          supervisor: {
+            select: {
+              name: true,
+              birth: true,
+              genre: true,
+              photo: true
+            }
+          }
         }
       }
     }});
@@ -30,23 +45,37 @@ export class CellService {
 
   async findOne(id:string) {
     return this.prisma.cell.findUnique({where:{id}, include: {
-      leader:true,
+      leader:{
+         select: {
+              name: true,
+              birth: true,
+              genre: true,
+              photo: true
+            }
+      },
       cellsNetwork: {
         include: {
-          supervisor: true
+          supervisor: {
+            select: {
+              name: true,
+              birth: true,
+              genre: true,
+              photo: true,
+              }
+          }
         }
       }
     }});
   }
 
   async update(id:string, data:CellDTO){
-    const cellExists = await this.prisma.cell.findUnique({
+    const dataExists = await this.prisma.cell.findUnique({
       where: {
         id,
       }
     });
-    if (!cellExists) {
-      throw new Error("Cell does not exixts");
+    if (!dataExists) {
+      RegisterNotExists('Cell')
     }
     return await this.prisma.cell.update({
       data,
@@ -57,13 +86,13 @@ export class CellService {
   }
 
   async delete(id:string){
-    const cellExists = await this.prisma.cell.findUnique({
+    const dataExists = await this.prisma.cell.findUnique({
       where: {
         id,
       }
     });
-    if (!cellExists) {
-      throw new Error("User does not exixts");
+    if (!dataExists) {
+       RegisterNotExists('Cell')
     }
     return await this.prisma.cell.delete({
        where: {

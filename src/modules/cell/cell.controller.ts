@@ -1,12 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CellDTO } from 'src/modules/cell/cell.dto';
+import { JwtAuthGuard } from 'src/modules/_security/auth/guard/jwt-auth.guard';
 import { CellService } from './cell.service';
-import { JwtAuthGuard } from 'src/modules/auth/guard/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('cells')
 export class CellController {
   constructor(private readonly cellService: CellService) {}
+
 
   @Post()
   async create(@Body() data: CellDTO){

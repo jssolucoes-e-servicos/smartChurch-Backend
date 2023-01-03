@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards  } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ChurchDTO } from 'src/modules/church/church.dto';
+import { JwtAuthGuard } from 'src/modules/_security/auth/guard/jwt-auth.guard';
 import { ChurchService } from './church.service';
-import { JwtAuthGuard } from 'src/modules/auth/guard/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('churches')

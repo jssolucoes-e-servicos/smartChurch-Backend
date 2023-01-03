@@ -1,0 +1,450 @@
+model Person {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+ 
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("users")
+}
+
+
+
+
+enum Genre {
+  M
+  F
+}
+
+enum CourseStap {
+  new
+  inCourse
+  finalized
+  finalizedAproved
+  finlizaedReproved
+  cancel
+}
+
+enum LessonType {
+  Online
+  Presencial
+}
+
+enum FileType {
+  pdf
+  image
+  excel
+  word
+  powerpoint
+  zip
+  audio
+  video
+  script
+  csv
+}
+
+enum StatsLogin {
+  active
+  locked
+  recovering
+  unchekble
+  unactive
+}
+
+enum VideoPlatform {
+  Vimeo
+  Youtube
+}
+
+model Church {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  fantasy           String?
+  cnpj              String
+  ie                String              @default("ISENTO")
+  email             String?             @unique
+  phone             String?
+  shepherd          String
+  image             String?
+  active            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@map("Churches")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String?
+  attempts   Int        @default(3)
+  statsLogin StatsLogin @default(unchekble)
+  isAdmin    Boolean    @default(false)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  person    Person? 
+
+  @@map("Users")
+}
+
+model Person {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  genre             Genre               @default(M)
+  birth             DateTime?
+  email             String?             @unique
+  active            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@map("People")
+}
+
+model PersonsOnChurches {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  person    Person   
+  church    Church   
+  singnedAt DateTime @default(now())
+  singnetBy String
+
+  @@map("PersonsOnChurches")
+}
+
+model CellsNetwork {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  color        String?
+  image        String?
+  supervisor   Person?  
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("CellsNetworks")
+}
+
+model Cell {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  color            String?
+  image            String?
+  day              String             @default("quarta-feira")
+  hour             String             @default("20:00")
+  method           String             @default("hibrid")
+  leader           Person             
+  address          String?
+  cellsNetwork     CellsNetwork       
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+ 
+  @@map("Cells")
+}
+
+model VisitorCell {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell     
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("VisitorsOnCells")
+}
+
+model Visitor {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell     
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("Visitors")
+}
+
+model VisitorConverted {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell?    
+  visitor   Visitor? 
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("VisitorsOnConverteds")
+}
+
+model VisitorBaptized {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell?    
+  visitor   Visitor? 
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("VisitorsOnBaptizeds")
+}
+
+
+
+
+
+
+model Studant {
+  id                       String                     @id @default(auto()) @map("_id") @db.ObjectId
+  name                     String
+  genre                    Genre                      @default(M)
+  birth                    DateTime?
+  email                    String?                    @unique
+  hasPerson                Boolean                    @default(false)
+  localPassword            String?
+  statsLogin               StatsLogin                 @default(unchekble)
+  active                   Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+
+  @@map("studants")
+}
+
+model Teacher {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  genre         Genre      @default(M)
+  birth         DateTime?
+  email         String?    @unique
+  bio           String
+  photo         String
+ 
+  hasPerson     Boolean    @default(false)
+  localPassword String?
+  statsLogin    StatsLogin @default(unchekble)
+  active        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  @@map("teachers")
+}
+
+model CourseGroup {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  church    Church   
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("courseGroups")
+}
+
+model Course {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  slug             String
+  group            CourseGroup        
+  description      String
+  image            String?
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@map("courses")
+}
+
+model CourseLesson {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  course          Course            
+  description     String
+  isVideo         Boolean           @default(true)
+  videoPlatform   VideoPlatform     @default(Youtube)
+  type            LessonType        @default(Online)
+  videoIdentify   String?
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("coursesLessons")
+}
+
+model LessonFile {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  lesson         CourseLesson 
+  name           String
+  format         FileType     @default(pdf)
+  url            String
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+ 
+  @@map("LessonFiles")
+}
+
+model CourseClass {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  course         Course          
+  active         Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+ 
+  @@map("CourseClasses")
+}
+
+model StudantOnClass {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  studant       Studant     
+  class         CourseClass 
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("StudantOnClasses")
+}
+
+model StudantOnLesson {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  studant        Studant     
+  lesson         CourseLesson 
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("StudantOnLessons")
+}
+
+model CourseLibrary {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  writer             String
+  image              String
+  required           Boolean              @default(true)
+  course             Course               
+  active             Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@map("CourseLibraries")
+}
+
+model CourseLibraryQuest {
+  id                       String                     @id @default(auto()) @map("_id") @db.ObjectId
+  library                  CourseLibrary              
+  title                    String
+  active                   Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+
+  @@map("CourseLibraryQuests")
+}
+
+model CourseLibraryQuestOption {
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  quest                 CourseLibraryQuest      
+  label                 String
+  correct               Boolean                 @default(false)
+  active                Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  @@map("CourseLibraryQuestOptions")
+}
+
+model CourseReading {
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  studant               Studant                 
+  library               CourseLibrary          
+  result                String
+  stap                  CourseStap              @default(new)
+  active                Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  @@map("CourseReadings")
+}
+
+model CourseReadingResponse {
+  id                         String                   @id @default(auto()) @map("_id") @db.ObjectId
+  reading                    CourseReading            
+  quest                      CourseLibraryQuest      
+  option                     CourseLibraryQuestOption 
+  correct                    Boolean                  @default(false)
+  active                     Boolean                  @default(true)
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime                 @updatedAt
+
+  @@map("CourseReadingResponses")
+}
+
+///////////////////////////////////////////////////////////////
+
+model CourseEvaluation {
+  id                       String                     @id @default(auto()) @map("_id") @db.ObjectId
+  name                     String
+  course                   Course                     
+  active                   Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+
+  @@map("CourseEvaluation")
+}
+
+model CourseEvaluationQuest {
+  id                               String                             @id @default(auto()) @map("_id") @db.ObjectId
+  evaluation                       CourseEvaluation                  
+  title                            String
+  point                            Float                              @default(10)
+  active                           Boolean                            @default(true)
+  createdAt                        DateTime                           @default(now())
+  updatedAt                        DateTime                           @updatedAt
+
+  @@map("CourseEvaluationQuests")
+}
+
+model CourseEvaluationQuestOption {
+  id                               String                             @id @default(auto()) @map("_id") @db.ObjectId
+  quest                            CourseEvaluationQuest             
+  label                            String
+  correct                          Boolean                            @default(false)
+  active                           Boolean                            @default(true)
+  createdAt                        DateTime                           @default(now())
+  updatedAt                        DateTime                           @updatedAt
+
+  @@map("CourseEvaluationQuestOptions")
+}
+
+model CourseEvaluationProgress {
+  id                               String                             @id @default(auto()) @map("_id") @db.ObjectId
+  studant                          Studant                            
+  evaluation                       CourseEvaluation                   
+  result                           String
+  stap                             CourseStap                         @default(new)
+  active                           Boolean                            @default(true)
+  createdAt                        DateTime                           @default(now())
+  updatedAt                        DateTime                           @updatedAt
+
+  @@map("CourseEvaluationProgress")
+}
+
+model CourseEvaluationProgressResponse {
+  id                            String                      @id @default(auto()) @map("_id") @db.ObjectId
+  evaluation                    CourseEvaluationProgress    
+  quest                         CourseEvaluationQuest       
+  option                        CourseEvaluationQuestOption 
+  correct                       Boolean                     @default(false)
+  active                        Boolean                     @default(true)
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
+
+  @@map("CourseEvaluationProgressResponses")
+}
