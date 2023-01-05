@@ -27,3 +27,8 @@
     user: string
     password: string
   }
+
+  export type TfaConfirmActivateRequestType = {
+    user: string,
+    token: string
+  }
