@@ -1,0 +1,543 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Church {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  fantasy           String?
+  cnpj              String
+  ie                String              @default("ISENTO")
+  email             String?             @unique
+  phone             String?
+  shepherd          String
+  image             String?
+  active            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  PersonsOnChurches PersonsOnChurches[]
+  Teacher           Teacher[]
+  CourseGroup       CourseGroup[]
+  ChurchLink        ChurchLink[]
+
+  @@map("Churches")
+}
+
+model ChurchLink {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  church    Church   @relation(fields: [churchId], references: [id])
+  churchId  String   @db.ObjectId
+  position  String   @default("aside")
+  title     String
+  url       String
+  icon      String
+  blank     Boolean  @default(false)
+  onEAD     Boolean  @default(true)
+  onChurch  Boolean  @default(true)
+  onPortal  Boolean  @default(true)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ChurchesLinks")
+}
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      Person   @relation(fields: [userId], references: [id])
+  userAgent String?  @default("null")
+  ipClient  String?  @default("null")
+  platform  String?  @default("null")
+  token     String?  @default("null")
+  app       String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @db.ObjectId
+
+  @@map("Sessions")
+}
+
+model Person {
+  id                            String                     @id @default(auto()) @map("_id") @db.ObjectId
+  name                          String
+  genre                         String                     @default("M")
+  birth                         DateTime?
+  photo                         String?
+  email                         String?                    @unique
+  password                      String?
+  loginAttempts                 Int                        @default(3)
+  statsLogin                    String                     @default("unchekble")
+  inRecovery                    Boolean                    @default(false)
+  isAdmin                       Boolean                    @default(false)
+  TwoFactorAuthenticationActive Boolean                    @default(false)
+  active                        Boolean                    @default(true)
+  createdAt                     DateTime                   @default(now())
+  updatedAt                     DateTime                   @updatedAt
+  PersonsOnChurches             PersonsOnChurches[]
+  Teacher                       Teacher[]
+  StudantOnClass                StudantOnClass[]
+  StudantOnLesson               StudantOnLesson[]
+  CourseReading                 CourseReading[]
+  CourseEvaluationProgress      CourseEvaluationProgress[]
+  PersonDocument                PersonDocument[]
+  CellsNetwork                  CellsNetwork[]
+  Cell                          Cell[]
+  Session                       Session[]
+  TwoFactorAuthentication       TwoFactorAuthentication[]
+  RecoveryToken                 RecoveryToken[]
+
+  @@map("People")
+}
+
+model RecoveryToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  person     Person   @relation(fields: [personId], references: [id])
+  personId   String   @db.ObjectId
+  token      String
+  expiration DateTime
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("RecoveryTokens")
+}
+
+model TwoFactorAuthentication {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  person            Person   @relation(fields: [personId], references: [id])
+  personId          String   @db.ObjectId
+  ascii             String
+  hex               String
+  base32            String
+  otpauth_url       String
+  recoveryCodeOne   String
+  recoveryCodeTwo   String
+  recoveryCodeThree String
+  recoveryCodeFour  String
+  recoveryCodeFive  String
+  recoveryCodeSix   String
+  recoveryCodeSeven String
+  recoveryCodeEigth String
+  recoveryCodeNine  String
+  recoveryCodeTen   String
+  activedIn         DateTime @default(now())
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("TwoFactorAuthentications")
+}
+
+model PersonDocument {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  person        Person   @relation(fields: [personId], references: [id])
+  documentName  String
+  documentValue String
+  documentObs1  String?
+  documentObs2  String?
+  documentObs3  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  personId      String   @db.ObjectId
+
+  @@map("PersonDocuments")
+}
+
+model PersonsOnChurches {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  person       Person   @relation(fields: [personId], references: [id])
+  church       Church   @relation(fields: [churchId], references: [id])
+  singnedAt    DateTime @default(now())
+  singnetBy    String
+  member       Boolean  @default(true)
+  dizimist     Boolean  @default(false)
+  permitChurch Boolean  @default(true)
+  permitEAD    Boolean  @default(false)
+  permitPortal Boolean  @default(false)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  personId     String   @db.ObjectId
+  churchId     String   @db.ObjectId
+
+  @@map("PersonsOnChurches")
+}
+
+model CellsNetwork {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  color        String?
+  image        String?
+  supervisor   Person   @relation(fields: [supervisorId], references: [id])
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  supervisorId String   @db.ObjectId
+  Cell         Cell[]
+
+  @@map("CellsNetworks")
+}
+
+model Cell {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  color            String?
+  image            String?
+  day              String             @default("quarta-feira")
+  hour             String             @default("20:00")
+  method           String             @default("hibrid")
+  leader           Person             @relation(fields: [leaderId], references: [id])
+  address          String?
+  cellsNetwork     CellsNetwork       @relation(fields: [cellsNetworkId], references: [id])
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  leaderId         String             @db.ObjectId
+  cellsNetworkId   String             @db.ObjectId
+  Visitor          Visitor[]
+  VisitorCell      VisitorCell[]
+  VisitorConverted VisitorConverted[]
+  VisitorBaptized  VisitorBaptized[]
+
+  @@map("Cells")
+}
+
+model Visitor {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  image            String?
+  date             DateTime           @default(now())
+  cell             Cell               @relation(fields: [cellId], references: [id])
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  cellId           String             @db.ObjectId
+  VisitorConverted VisitorConverted[]
+  VisitorBaptized  VisitorBaptized[]
+
+  @@map("Visitors")
+}
+
+model VisitorCell {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell     @relation(fields: [cellId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cellId    String   @db.ObjectId
+
+  @@map("VisitorsOnCells")
+}
+
+model VisitorConverted {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell?    @relation(fields: [cellId], references: [id])
+  visitor   Visitor? @relation(fields: [visitorId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cellId    String?  @db.ObjectId
+  visitorId String?  @db.ObjectId
+
+  @@map("VisitorsOnConverteds")
+}
+
+model VisitorBaptized {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell?    @relation(fields: [cellId], references: [id])
+  visitor   Visitor? @relation(fields: [visitorId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cellId    String?  @db.ObjectId
+  visitorId String?  @db.ObjectId
+
+  @@map("VisitorsOnBaptizeds")
+}
+
+model Teacher {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  bio       String
+  person    Person   @relation(fields: [personId], references: [id])
+  church    Church   @relation(fields: [churchId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  personId  String   @db.ObjectId
+  churchId  String   @db.ObjectId
+
+  @@map("teachers")
+}
+
+model CourseGroup {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  church    Church   @relation(fields: [churchId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  churchId  String   @db.ObjectId
+  Course    Course[]
+
+  @@map("courseGroups")
+}
+
+model Course {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  slug             String
+  curseGroup       CourseGroup        @relation(fields: [courseGroupId], references: [id])
+  description      String
+  image            String?
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  courseGroupId    String             @db.ObjectId
+  CourseLesson     CourseLesson[]
+  CourseClass      CourseClass[]
+  CourseLibrary    CourseLibrary[]
+  CourseEvaluation CourseEvaluation[]
+
+  @@map("courses")
+}
+
+model CourseLesson {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  course          Course            @relation(fields: [courseId], references: [id])
+  description     String
+  isVideo         Boolean           @default(true)
+  videoPlatform   String            @default("Youtube")
+  type            String            @default("Online")
+  videoIdentify   String?
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  courseId        String            @db.ObjectId
+  LessonFile      LessonFile[]
+  StudantOnLesson StudantOnLesson[]
+
+  @@map("coursesLessons")
+}
+
+model LessonFile {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  lesson         CourseLesson @relation(fields: [courseLessonId], references: [id])
+  name           String
+  format         String       @default("pdf")
+  url            String
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  courseLessonId String       @db.ObjectId
+
+  @@map("LessonFiles")
+}
+
+model CourseClass {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  course         Course           @relation(fields: [courseId], references: [id])
+  active         Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  courseId       String           @db.ObjectId
+  StudantOnClass StudantOnClass[]
+
+  @@map("CourseClasses")
+}
+
+model StudantOnClass {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  studant       Person      @relation(fields: [studantId], references: [id])
+  class         CourseClass @relation(fields: [courseClassId], references: [id])
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  studantId     String      @db.ObjectId
+  courseClassId String      @db.ObjectId
+
+  @@map("StudantOnClasses")
+}
+
+model StudantOnLesson {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  studant        Person       @relation(fields: [studantId], references: [id])
+  lesson         CourseLesson @relation(fields: [courseLessonId], references: [id])
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  studantId      String       @db.ObjectId
+  courseLessonId String       @db.ObjectId
+
+  @@map("StudantOnLessons")
+}
+
+model CourseLibrary {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  writer             String
+  image              String
+  required           Boolean              @default(true)
+  course             Course               @relation(fields: [courseId], references: [id])
+  active             Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  courseId           String               @db.ObjectId
+  CourseLibraryQuest CourseLibraryQuest[]
+  CourseReading      CourseReading[]
+
+  @@map("CourseLibraries")
+}
+
+model CourseLibraryQuest {
+  id                       String                     @id @default(auto()) @map("_id") @db.ObjectId
+  library                  CourseLibrary              @relation(fields: [courseLibraryId], references: [id])
+  title                    String
+  active                   Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  courseLibraryId          String                     @db.ObjectId
+  CourseLibraryQuestOption CourseLibraryQuestOption[]
+  CourseReadingResponse    CourseReadingResponse[]
+
+  @@map("CourseLibraryQuests")
+}
+
+model CourseLibraryQuestOption {
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  quest                 CourseLibraryQuest      @relation(fields: [courseLibraryQuestId], references: [id])
+  label                 String
+  correct               Boolean                 @default(false)
+  active                Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  courseLibraryQuestId  String                  @db.ObjectId
+  CourseReadingResponse CourseReadingResponse[]
+
+  @@map("CourseLibraryQuestOptions")
+}
+
+model CourseReading {
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  studant               Person                  @relation(fields: [studantId], references: [id])
+  library               CourseLibrary           @relation(fields: [courseLibraryId], references: [id])
+  result                String
+  stap                  String                  @default("new")
+  active                Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  studantId             String                  @db.ObjectId
+  courseLibraryId       String                  @db.ObjectId
+  CourseReadingResponse CourseReadingResponse[]
+
+  @@map("CourseReadings")
+}
+
+model CourseReadingResponse {
+  id                         String                   @id @default(auto()) @map("_id") @db.ObjectId
+  reading                    CourseReading            @relation(fields: [courseReadingId], references: [id])
+  quest                      CourseLibraryQuest       @relation(fields: [courseLibraryQuestId], references: [id])
+  option                     CourseLibraryQuestOption @relation(fields: [courseLibraryQuestOptionId], references: [id])
+  correct                    Boolean                  @default(false)
+  active                     Boolean                  @default(true)
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime                 @updatedAt
+  courseReadingId            String                   @db.ObjectId
+  courseLibraryQuestId       String                   @db.ObjectId
+  courseLibraryQuestOptionId String                   @db.ObjectId
+
+  @@map("CourseReadingResponses")
+}
+
+///////////////////////////////////////////////////////////////
+
+model CourseEvaluation {
+  id                       String                     @id @default(auto()) @map("_id") @db.ObjectId
+  name                     String
+  course                   Course                     @relation(fields: [courseId], references: [id])
+  active                   Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  courseId                 String                     @db.ObjectId
+  CourseEvaluationQuest    CourseEvaluationQuest[]
+  CourseEvaluationProgress CourseEvaluationProgress[]
+
+  @@map("CourseEvaluation")
+}
+
+model CourseEvaluationQuest {
+  id                               String                             @id @default(auto()) @map("_id") @db.ObjectId
+  evaluation                       CourseEvaluation                   @relation(fields: [courseEvaluationId], references: [id])
+  title                            String
+  point                            Float                              @default(10)
+  active                           Boolean                            @default(true)
+  createdAt                        DateTime                           @default(now())
+  updatedAt                        DateTime                           @updatedAt
+  courseEvaluationId               String                             @db.ObjectId
+  CourseEvaluationQuestOption      CourseEvaluationQuestOption[]
+  CourseEvaluationProgressResponse CourseEvaluationProgressResponse[]
+
+  @@map("CourseEvaluationQuests")
+}
+
+model CourseEvaluationQuestOption {
+  id                               String                             @id @default(auto()) @map("_id") @db.ObjectId
+  quest                            CourseEvaluationQuest              @relation(fields: [courseEvaluationQuestId], references: [id])
+  label                            String
+  correct                          Boolean                            @default(false)
+  active                           Boolean                            @default(true)
+  createdAt                        DateTime                           @default(now())
+  updatedAt                        DateTime                           @updatedAt
+  courseEvaluationQuestId          String                             @db.ObjectId
+  CourseEvaluationProgressResponse CourseEvaluationProgressResponse[]
+
+  @@map("CourseEvaluationQuestOptions")
+}
+
+model CourseEvaluationProgress {
+  id                               String                             @id @default(auto()) @map("_id") @db.ObjectId
+  studant                          Person                             @relation(fields: [studantId], references: [id])
+  evaluation                       CourseEvaluation                   @relation(fields: [courseEvaluationId], references: [id])
+  result                           String
+  stap                             String                             @default("new")
+  active                           Boolean                            @default(true)
+  createdAt                        DateTime                           @default(now())
+  updatedAt                        DateTime                           @updatedAt
+  studantId                        String                             @db.ObjectId
+  courseEvaluationId               String                             @db.ObjectId
+  CourseEvaluationProgressResponse CourseEvaluationProgressResponse[]
+
+  @@map("CourseEvaluationProgress")
+}
+
+model CourseEvaluationProgressResponse {
+  id                            String                      @id @default(auto()) @map("_id") @db.ObjectId
+  evaluation                    CourseEvaluationProgress    @relation(fields: [courseEvaluationProgressId], references: [id])
+  quest                         CourseEvaluationQuest       @relation(fields: [courseEvaluationQuestId], references: [id])
+  option                        CourseEvaluationQuestOption @relation(fields: [courseEvaluationQuestOptionId], references: [id])
+  correct                       Boolean                     @default(false)
+  active                        Boolean                     @default(true)
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
+  courseEvaluationProgressId    String                      @db.ObjectId
+  courseEvaluationQuestId       String                      @db.ObjectId
+  courseEvaluationQuestOptionId String                      @db.ObjectId
+
+  @@map("CourseEvaluationProgressResponses")
+}
