@@ -5,6 +5,7 @@ import { PrismaService } from 'src/databases/PrismaService';
 
 @Module({
   controllers: [CellsNetworkController],
-  providers: [CellsNetworkService, PrismaService]
+  providers: [CellsNetworkService, PrismaService],
+  exports: [CellsNetworkService],
 })
 export class CellsNetworkModule {}

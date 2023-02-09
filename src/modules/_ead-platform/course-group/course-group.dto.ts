@@ -1,5 +1,5 @@
 export type CourseGroupDTO = {
-  id?: string
-  name: string
-  churchId: string
-}
+  id?: string;
+  name: string;
+  churchId: string;
+};

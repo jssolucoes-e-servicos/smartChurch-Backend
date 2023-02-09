@@ -22,6 +22,7 @@ async function bootstrap() {
     "optionsSuccessStatus": 204,
     
   });
-  await app.listen(3333);
+  const port = process.env.PORT || 3333
+  await app.listen(port);
 }
 bootstrap();

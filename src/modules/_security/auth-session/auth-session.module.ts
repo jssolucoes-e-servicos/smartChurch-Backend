@@ -6,6 +6,6 @@ import { AuthSessionService } from './auth-session.service';
 @Module({
   controllers: [AuthSessionController],
   providers: [AuthSessionService, PrismaService],
-  exports: [AuthSessionService ],
+  exports: [AuthSessionService],
 })
 export class AuthSessionModule {}

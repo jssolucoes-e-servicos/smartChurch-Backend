@@ -4,129 +4,141 @@ import { AuthSessionDTO } from 'src/modules/_security/auth-session/auth-session.
 
 @Injectable()
 export class AuthSessionService {
-  constructor( private prisma: PrismaService){}
-  
+  constructor(private prisma: PrismaService) {}
+
   async all() {
-    return await this.prisma.session.findMany({select: {
-      app: true,
-      createdAt: true,
-      platform: true,
-      ipClient: true,
-      userAgent: true,
-      user: {
-        select: {
-          email: true,
-          name: true,
-          genre: true,
-          photo: true,
-        }
-      }
-    }});
+    return await this.prisma.session.findMany({
+      select: {
+        app: true,
+        createdAt: true,
+        platform: true,
+        ipClient: true,
+        userAgent: true,
+        user: {
+          select: {
+            email: true,
+            name: true,
+            genre: true,
+            photo: true,
+          },
+        },
+      },
+    });
   }
 
   async show(id: string) {
-    return await this.prisma.session.findUnique({where:{id}, select: {
-      app: true,
-      createdAt: true,
-      platform: true,
-      ipClient: true,
-      userAgent: true,
-      user: {
-        select: {
-          email: true,
-          name: true,
-          genre: true,
-          photo: true,
-        }
-      }
-    }});
+    return await this.prisma.session.findUnique({
+      where: { id },
+      select: {
+        app: true,
+        createdAt: true,
+        platform: true,
+        ipClient: true,
+        userAgent: true,
+        user: {
+          select: {
+            email: true,
+            name: true,
+            genre: true,
+            photo: true,
+          },
+        },
+      },
+    });
   }
 
-  async findByUser(userId: string, pStatus: boolean|null = null) {
-    let whereClausure = pStatus === null ? { userId } : { userId, active: pStatus };
-    return await this.prisma.session.findMany({where:whereClausure, select: {
-      app: true,
-      createdAt: true,
-      platform: true,
-      ipClient: true,
-      userAgent: true,
-      user: {
-        select: {
-          email: true,
-          name: true,
-          genre: true,
-          photo: true,
-        }
-      }
-    }})
+  async findByUser(userId: string, pStatus: boolean | null = null) {
+    const whereClausure =
+      pStatus === null ? { userId } : { userId, active: pStatus };
+    return await this.prisma.session.findMany({
+      where: whereClausure,
+      select: {
+        app: true,
+        createdAt: true,
+        platform: true,
+        ipClient: true,
+        userAgent: true,
+        user: {
+          select: {
+            email: true,
+            name: true,
+            genre: true,
+            photo: true,
+          },
+        },
+      },
+    });
   }
 
-  async findByApp(app: string, pStatus: boolean|null = null) {
-    let whereClausure = pStatus === null ? { app } : { app, active: pStatus };
-    return await this.prisma.session.findMany({where:whereClausure, select: {
-      app: true,
-      createdAt: true,
-      platform: true,
-      ipClient: true,
-      userAgent: true,
-      user: {
-        select: {
-          email: true,
-          name: true,
-          genre: true,
-          photo: true,
-        }
-      }
-    }});
+  async findByApp(app: string, pStatus: boolean | null = null) {
+    const whereClausure = pStatus === null ? { app } : { app, active: pStatus };
+    return await this.prisma.session.findMany({
+      where: whereClausure,
+      select: {
+        app: true,
+        createdAt: true,
+        platform: true,
+        ipClient: true,
+        userAgent: true,
+        user: {
+          select: {
+            email: true,
+            name: true,
+            genre: true,
+            photo: true,
+          },
+        },
+      },
+    });
   }
 
-  async closeAllSessionsUser(user:string) {
+  async closeAllSessionsUser(user: string) {
     return await this.prisma.session.updateMany({
-      data: { 
+      data: {
         active: false,
-        token: ""
-      }, 
+        token: '',
+      },
       where: {
-        userId: user
-      }
-    }) 
+        userId: user,
+      },
+    });
   }
 
-  async closeAllSessionsUserByApp(userId:string, app: string) {
+  async closeAllSessionsUserByApp(userId: string, app: string) {
     return await this.prisma.session.updateMany({
-      data: { 
-        active: false,  
-        token: ""
-      }, 
+      data: {
+        active: false,
+        token: '',
+      },
       where: {
-        userId, 
-        app
-      }
-    }) 
+        userId,
+        app,
+      },
+    });
   }
 
   async closeAllMasterByApp(app: string) {
     return await this.prisma.session.updateMany({
-      data: { 
-        active: false,          
-        token: ""
-      }, 
+      data: {
+        active: false,
+        token: '',
+      },
       where: {
-        app
-      }
-    }) 
+        app,
+      },
+    });
   }
 
-  async create(data: AuthSessionDTO){
-    return await this.prisma.session.create({data})
+  async create(data: AuthSessionDTO) {
+    return await this.prisma.session.create({ data });
   }
 
-  async update(data: AuthSessionDTO) {
+  async update(id: string, data: AuthSessionDTO) {
     return await this.prisma.session.update({
       data,
       where: {
-        id: data.id
-      }
-    })
-  } 
+        id: id,
+      },
+    });
+  }
 }

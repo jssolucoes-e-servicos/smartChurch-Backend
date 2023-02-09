@@ -9,18 +9,18 @@ export class AuthService {
   constructor(
     private readonly personService: PersonService,
     private readonly authSessionService: AuthSessionService,
-    private jwtService: JwtService
-  ){}
+    private jwtService: JwtService,
+  ) {}
 
-  async validateUser(userEmail:string, userPassword:string){
+  async validateUser(userEmail: string, userPassword: string) {
     const person = await this.personService.findByEmailToLogin(userEmail);
-    if (person){
+    if (person) {
       const isPasswordValid = await compare(userPassword, person.password);
-      if (isPasswordValid){
+      if (isPasswordValid) {
         return {
           ...person,
           password: undefined,
-        }
+        };
       }
     }
     return null;
@@ -29,17 +29,18 @@ export class AuthService {
   async login(user: UserResponseType, sessionData: AuthSessionDTO) {
     const session = await this.authSessionService.create(sessionData);
     const payload = { email: user.email, sub: user.id, session: session.id };
-    let access_token = this.jwtService.sign(payload);
-    let sessionToUpdate = {
-        ...session,
-        token: access_token
-      }
-    await this.authSessionService.update(sessionToUpdate);
+    const access_token = this.jwtService.sign(payload);
+    const sessionToUpdate = {
+      ...session,
+      id: undefined,
+      token: access_token,
+    };
+    await this.authSessionService.update(session.id, sessionToUpdate);
     return {
       access_token: user.TwoFactorAuthenticationActive ? null : access_token,
       user: user,
       session: session.id,
       TFA: user.TwoFactorAuthenticationActive,
     };
-  } 
+  }
 }

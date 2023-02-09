@@ -5,6 +5,7 @@ import { PrismaService } from 'src/databases/PrismaService';
 
 @Module({
   controllers: [ChurchController],
-  providers: [ChurchService, PrismaService]
+  providers: [ChurchService, PrismaService],
+  exports: [ChurchService],
 })
 export class ChurchModule {}

@@ -3,33 +3,38 @@ import { hash } from 'bcrypt';
 import { PrismaService } from 'src/databases/PrismaService';
 import { PersonDTO } from './person.dto';
 
+type PathItemType = {
+  field: 'TwoFactorAuthenticationActive';
+  value: 'true';
+};
+
 @Injectable()
 export class PersonService {
-  constructor(private prisma: PrismaService){}
+  constructor(private prisma: PrismaService) {}
 
-  async create(data:PersonDTO){
+  async create(data: PersonDTO) {
     const emailExists = await this.prisma.person.findFirst({
-      where: { 
-        email: data.email
-      }
+      where: {
+        email: data.email,
+      },
     });
     if (emailExists) {
-      throw new Error("Person already exixts");
+      throw new Error('Person already exixts');
     }
-    let dataToInsert = { ...data }
-    if(data.password) {
+    let dataToInsert = { ...data };
+    if (data.password) {
       dataToInsert = {
         ...data,
-        password: await hash(data.password, 10)
-      }
+        password: await hash(data.password, 10),
+      };
     }
     const person = await this.prisma.person.create({
-      data: dataToInsert
-    })
+      data: dataToInsert,
+    });
 
     return {
       ...person,
-      password : undefined
+      password: undefined,
     };
   }
 
@@ -50,7 +55,7 @@ export class PersonService {
             image: true,
             name: true,
             color: true,
-          }
+          },
         },
         CourseEvaluationProgress: {
           select: {
@@ -61,9 +66,9 @@ export class PersonService {
               select: {
                 id: true,
                 name: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         StudantOnClass: {
           select: {
@@ -75,12 +80,12 @@ export class PersonService {
                   select: {
                     id: true,
                     name: true,
-                    image: true
-                  }
-                }
-              }
-            }
-          }
+                    image: true,
+                  },
+                },
+              },
+            },
+          },
         },
         Cell: {
           select: {
@@ -89,10 +94,10 @@ export class PersonService {
             color: true,
             image: true,
             leader: {
-               select: {
+              select: {
                 genre: true,
                 name: true,
-              }
+              },
             },
             cellsNetwork: {
               select: {
@@ -103,21 +108,20 @@ export class PersonService {
                   select: {
                     genre: true,
                     name: true,
-                  }
-                }
+                  },
+                },
               },
-            }
-          }
-        }
-      }
+            },
+          },
+        },
+      },
     });
   }
 
-
-  async findOne(id:string) {
+  async findOne(id: string) {
     return this.prisma.person.findUnique({
-      where:{
-        id
+      where: {
+        id,
       },
       select: {
         id: true,
@@ -131,8 +135,8 @@ export class PersonService {
         PersonDocument: true,
         Teacher: {
           select: {
-            bio: true
-          }
+            bio: true,
+          },
         },
         CellsNetwork: {
           select: {
@@ -140,7 +144,7 @@ export class PersonService {
             image: true,
             name: true,
             color: true,
-          }
+          },
         },
         CourseEvaluationProgress: {
           select: {
@@ -151,9 +155,9 @@ export class PersonService {
               select: {
                 id: true,
                 name: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         StudantOnClass: {
           select: {
@@ -165,12 +169,12 @@ export class PersonService {
                   select: {
                     id: true,
                     name: true,
-                    image: true
-                  }
-                }
-              }
-            }
-          }
+                    image: true,
+                  },
+                },
+              },
+            },
+          },
         },
         Cell: {
           select: {
@@ -179,10 +183,10 @@ export class PersonService {
             color: true,
             image: true,
             leader: {
-               select: {
+              select: {
                 genre: true,
                 name: true,
-              }
+              },
             },
             cellsNetwork: {
               select: {
@@ -193,24 +197,24 @@ export class PersonService {
                   select: {
                     genre: true,
                     name: true,
-                  }
-                }
+                  },
+                },
               },
-            }
-          }
-        }
+            },
+          },
+        },
       },
     });
   }
 
-  async findByEmail(email: string) {
-    const person = await this.prisma.person.findUnique({where:{email}});
+  async findByEmail(email: string): Promise<PersonDTO> {
+    const person = await this.prisma.person.findUnique({ where: { email } });
     return person;
   }
 
-   async findByEmailToLogin(email: string) {
+  async findByEmailToLogin(email: string) {
     const person = await this.prisma.person.findUnique({
-      where:{email}, 
+      where: { email },
       select: {
         id: true,
         name: true,
@@ -220,13 +224,13 @@ export class PersonService {
         email: true,
         password: true,
         loginAttempts: true,
-        statsLogin: true,       
-        inRecovery: true,     
+        statsLogin: true,
+        inRecovery: true,
         isAdmin: true,
         TwoFactorAuthenticationActive: true,
         PersonsOnChurches: {
           where: {
-            active: true
+            active: true,
           },
           select: {
             church: {
@@ -234,61 +238,59 @@ export class PersonService {
                 id: true,
                 name: true,
                 fantasy: true,
-                image: true
-              }
+                image: true,
+              },
             },
             permitChurch: true,
             permitEAD: true,
             permitPortal: true,
             dizimist: true,
             member: true,
-            singnedAt: true
-          }
-        }
-      }
+            singnedAt: true,
+          },
+        },
+      },
     });
     return person;
   }
 
-  async update(id:string, data:PersonDTO){
+  async update(id: string, data: PersonDTO) {
     const personExists = await this.prisma.person.findUnique({
       where: {
         id,
-      }
+      },
     });
     if (!personExists) {
-      throw new Error("Person does not exixts");
+      throw new Error('Person does not exixts');
     }
-    let dataToUpdate = { ...data }
-    if(data.password) {
+    let dataToUpdate = { ...data };
+    if (data.password) {
       dataToUpdate = {
         ...data,
-        password: await hash(data.password, 10)
-      }
+        password: await hash(data.password, 10),
+      };
     }
     return await this.prisma.person.update({
       data: dataToUpdate,
       where: {
         id,
-      }
-    })
+      },
+    });
   }
 
-  async delete(id:string){
+  async delete(id: string) {
     const personExists = await this.prisma.person.findUnique({
       where: {
         id,
-      }
+      },
     });
     if (!personExists) {
-      throw new Error("User does not exixts");
+      throw new Error('User does not exixts');
     }
     return await this.prisma.person.delete({
-       where: {
+      where: {
         id,
-      }
-    })
+      },
+    });
   }
-
-
 }
