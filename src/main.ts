@@ -8,7 +8,9 @@ async function bootstrap() {
   //configure this wwagger
   const config = new DocumentBuilder()
     .setTitle('smartChurch API')
-    .setDescription('A smartChurh API exists to connection of services and devices  with service central')
+    .setDescription(
+      'A smartChurh API exists to connection of services and devices  with service central',
+    )
     .setVersion('1.0')
     .addTag('church')
     .build();
@@ -16,13 +18,12 @@ async function bootstrap() {
   SwaggerModule.setup('doc', app, document);
   //config cors
   app.enableCors({
-    "origin": "*",
-    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-    "preflightContinue": false,
-    "optionsSuccessStatus": 204,
-    
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
-  const port = process.env.PORT || 3333
+  const port = parseInt(process.env.PORT);
   await app.listen(port);
 }
 bootstrap();

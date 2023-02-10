@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 // Modules for secirity
 import { AuthRecoveryModule } from './modules/_security/auth-recovery/auth-recovery.module';
 import { AuthSessionModule } from './modules/_security/auth-session/auth-session.module';
@@ -45,6 +46,9 @@ import { TeacherModule } from './modules/_ead-platform/teacher/teacher.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     AuthModule,
     CellModule,
     ChurchLinkModule,
