@@ -23,7 +23,7 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
-  const port = parseInt(process.env.PORT);
-  await app.listen(port);
+  //const port = parseInt(process.env.PORT);
+  await app.listen(AppModule.port || 3111);
 }
 bootstrap();

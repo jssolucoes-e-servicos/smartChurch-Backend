@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 // Modules for secirity
 import { AuthRecoveryModule } from './modules/_security/auth-recovery/auth-recovery.module';
 import { AuthSessionModule } from './modules/_security/auth-session/auth-session.module';
@@ -89,4 +89,9 @@ import { TeacherModule } from './modules/_ead-platform/teacher/teacher.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  static port: string;
+  constructor(configService: ConfigService) {
+    AppModule.port = configService.get('HTTP_PORT');
+  }
+}
