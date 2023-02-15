@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = "mongodb+srv://servicesapp:Bruno050709@cluster0.ejnyb.mongodb.net/smartChurch?retryWrites=true&w=majority"
 }
 
 model Church {
