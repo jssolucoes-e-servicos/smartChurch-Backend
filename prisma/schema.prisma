@@ -1,17 +1,21 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "binary"
+  //binaryTargets = ["native", "rhel-openssl-1.0.x"]
+  output     = "../libs/prisma-client"
 }
 
 datasource db {
   provider = "mongodb"
   url      = "mongodb+srv://servicesapp:Bruno050709@cluster0.ejnyb.mongodb.net/smartChurch?retryWrites=true&w=majority"
+  //url      = "mongodb://localhost:27017/smartChurch?authSource=admin&replicaSet=disable&retryWrites=true&w=majority"
 }
 
 model Church {
   id                String              @id @default(auto()) @map("_id") @db.ObjectId
   name              String
   fantasy           String?
-  cnpj              String
+  cnpj              String              @unique
   ie                String              @default("ISENTO")
   email             String?             @unique
   phone             String?
@@ -25,6 +29,7 @@ model Church {
   CourseGroup       CourseGroup[]
   ChurchLink        ChurchLink[]
 
+  @@index([phone, shepherd, createdAt(sort: Desc)])
   @@map("Churches")
 }
 
@@ -44,6 +49,7 @@ model ChurchLink {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([createdAt(sort: Desc)])
   @@map("ChurchesLinks")
 }
 
@@ -60,6 +66,7 @@ model Session {
   updatedAt DateTime @updatedAt
   userId    String   @db.ObjectId
 
+  @@index([createdAt(sort: Desc)])
   @@map("Sessions")
 }
 
@@ -92,6 +99,7 @@ model Person {
   TwoFactorAuthentication       TwoFactorAuthentication[]
   RecoveryToken                 RecoveryToken[]
 
+  @@index([statsLogin, inRecovery, isAdmin, birth(sort: Desc), createdAt(sort: Desc)])
   @@map("People")
 }
 
@@ -105,13 +113,14 @@ model RecoveryToken {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  @@index([token, expiration(sort: Desc), createdAt(sort: Desc)])
   @@map("RecoveryTokens")
 }
 
 model TwoFactorAuthentication {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
   person            Person   @relation(fields: [personId], references: [id])
-  personId          String   @db.ObjectId
+  personId          String   @unique @db.ObjectId
   ascii             String
   hex               String
   base32            String
@@ -131,13 +140,14 @@ model TwoFactorAuthentication {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  @@index([createdAt(sort: Desc)])
   @@map("TwoFactorAuthentications")
 }
 
 model PersonDocument {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   person        Person   @relation(fields: [personId], references: [id])
-  documentName  String
+  documentName  String   @unique
   documentValue String
   documentObs1  String?
   documentObs2  String?
@@ -146,6 +156,7 @@ model PersonDocument {
   updatedAt     DateTime @updatedAt
   personId      String   @db.ObjectId
 
+  @@index([createdAt(sort: Desc)])
   @@map("PersonDocuments")
 }
 
@@ -153,6 +164,7 @@ model PersonsOnChurches {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   person       Person   @relation(fields: [personId], references: [id])
   church       Church   @relation(fields: [churchId], references: [id])
+  memberId     String?
   singnedAt    DateTime @default(now())
   singnetBy    String
   member       Boolean  @default(true)
@@ -166,12 +178,14 @@ model PersonsOnChurches {
   personId     String   @db.ObjectId
   churchId     String   @db.ObjectId
 
+  @@index([memberId, singnedAt(sort: Desc), createdAt(sort: Desc)])
   @@map("PersonsOnChurches")
 }
 
 model CellsNetwork {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   name         String
+  slug         String?
   color        String?
   image        String?
   supervisor   Person   @relation(fields: [supervisorId], references: [id])
@@ -181,51 +195,57 @@ model CellsNetwork {
   supervisorId String   @db.ObjectId
   Cell         Cell[]
 
+  @@index([slug, supervisorId, createdAt(sort: Desc)])
   @@map("CellsNetworks")
 }
 
 model Cell {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  color            String?
-  image            String?
-  day              String             @default("quarta-feira")
-  hour             String             @default("20:00")
-  method           String             @default("hibrid")
-  leader           Person             @relation(fields: [leaderId], references: [id])
-  address          String?
-  cellsNetwork     CellsNetwork       @relation(fields: [cellsNetworkId], references: [id])
-  active           Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  leaderId         String             @db.ObjectId
-  cellsNetworkId   String             @db.ObjectId
-  Visitor          Visitor[]
-  VisitorCell      VisitorCell[]
-  VisitorConverted VisitorConverted[]
-  VisitorBaptized  VisitorBaptized[]
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  slug           String?
+  color          String?
+  image          String?
+  day            String          @default("quarta-feira")
+  hour           String          @default("20:00")
+  method         String          @default("hibrid")
+  leader         Person          @relation(fields: [leaderId], references: [id])
+  address        String?
+  cellsNetwork   CellsNetwork    @relation(fields: [cellsNetworkId], references: [id])
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  leaderId       String          @db.ObjectId
+  cellsNetworkId String          @db.ObjectId
+  Visitor        VisitorOnCult[]
+  VisitorCell    VisitorCell[]
 
+  @@index([slug, day, method, leaderId, address, cellsNetworkId, createdAt(sort: Desc)])
   @@map("Cells")
 }
 
-model Visitor {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  image            String?
-  date             DateTime           @default(now())
-  cell             Cell               @relation(fields: [cellId], references: [id])
-  active           Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  cellId           String             @db.ObjectId
-  VisitorConverted VisitorConverted[]
-  VisitorBaptized  VisitorBaptized[]
+model VisitorOnCult {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  idMaster  String?  @default("FIRST")
+  idMember  String?  @default("NOT_MEMBER")
+  name      String
+  image     String?
+  date      DateTime @default(now())
+  cell      Cell?    @relation(fields: [cellId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cellId    String?  @db.ObjectId
+  converted Boolean  @default(false)
+  baptized  Boolean  @default(false)
 
+  @@index([idMaster, idMember, date(sort: Desc), name, createdAt(sort: Desc)])
   @@map("Visitors")
 }
 
 model VisitorCell {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  idMaster  String?  @default("FIRST")
+  idMember  String?  @default("NOT_MEMBER")
   name      String
   image     String?
   date      DateTime @default(now())
@@ -234,59 +254,33 @@ model VisitorCell {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   cellId    String   @db.ObjectId
+  converted Boolean  @default(false)
 
+  @@index([idMaster, idMember, date(sort: Desc), name, createdAt(sort: Desc)])
   @@map("VisitorsOnCells")
 }
 
-model VisitorConverted {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  image     String?
-  date      DateTime @default(now())
-  cell      Cell?    @relation(fields: [cellId], references: [id])
-  visitor   Visitor? @relation(fields: [visitorId], references: [id])
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cellId    String?  @db.ObjectId
-  visitorId String?  @db.ObjectId
-
-  @@map("VisitorsOnConverteds")
-}
-
-model VisitorBaptized {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  image     String?
-  date      DateTime @default(now())
-  cell      Cell?    @relation(fields: [cellId], references: [id])
-  visitor   Visitor? @relation(fields: [visitorId], references: [id])
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cellId    String?  @db.ObjectId
-  visitorId String?  @db.ObjectId
-
-  @@map("VisitorsOnBaptizeds")
-}
-
 model Teacher {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  bio       String
-  person    Person   @relation(fields: [personId], references: [id])
-  church    Church   @relation(fields: [churchId], references: [id])
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  personId  String   @db.ObjectId
-  churchId  String   @db.ObjectId
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  bio          String
+  person       Person         @relation(fields: [personId], references: [id])
+  church       Church         @relation(fields: [churchId], references: [id])
+  active       Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  personId     String         @db.ObjectId
+  churchId     String         @db.ObjectId
+  CourseClass  CourseClass[]
+  CourseLesson CourseLesson[]
 
+  @@index([personId, churchId, createdAt(sort: Desc)])
   @@map("teachers")
 }
 
 model CourseGroup {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
+  slug      String?
   church    Church   @relation(fields: [churchId], references: [id])
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -294,13 +288,14 @@ model CourseGroup {
   churchId  String   @db.ObjectId
   Course    Course[]
 
+  @@index([slug, churchId, createdAt(sort: Desc)])
   @@map("courseGroups")
 }
 
 model Course {
   id               String             @id @default(auto()) @map("_id") @db.ObjectId
   name             String
-  slug             String
+  slug             String?
   curseGroup       CourseGroup        @relation(fields: [courseGroupId], references: [id])
   description      String
   image            String?
@@ -313,12 +308,14 @@ model Course {
   CourseLibrary    CourseLibrary[]
   CourseEvaluation CourseEvaluation[]
 
+  @@index([slug, createdAt(sort: Desc)])
   @@map("courses")
 }
 
 model CourseLesson {
   id              String            @id @default(auto()) @map("_id") @db.ObjectId
   name            String
+  slug            String?
   course          Course            @relation(fields: [courseId], references: [id])
   description     String
   isVideo         Boolean           @default(true)
@@ -329,9 +326,12 @@ model CourseLesson {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   courseId        String            @db.ObjectId
+  teacher         Teacher?          @relation(fields: [teacherId], references: [id])
+  teacherId       String?           @db.ObjectId
   LessonFile      LessonFile[]
   StudantOnLesson StudantOnLesson[]
 
+  @@index([slug, videoIdentify, createdAt(sort: Desc)])
   @@map("coursesLessons")
 }
 
@@ -346,51 +346,67 @@ model LessonFile {
   updatedAt      DateTime     @updatedAt
   courseLessonId String       @db.ObjectId
 
+  @@index([format, createdAt(sort: Desc)])
   @@map("LessonFiles")
 }
 
 model CourseClass {
   id             String           @id @default(auto()) @map("_id") @db.ObjectId
   name           String
+  slug           String
   course         Course           @relation(fields: [courseId], references: [id])
   active         Boolean          @default(true)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   courseId       String           @db.ObjectId
+  teacher        Teacher?         @relation(fields: [teacherId], references: [id])
+  teacherId      String?          @db.ObjectId
   StudantOnClass StudantOnClass[]
 
+  @@index([slug, teacherId, courseId, createdAt(sort: Desc)])
   @@map("CourseClasses")
 }
 
 model StudantOnClass {
-  id            String      @id @default(auto()) @map("_id") @db.ObjectId
-  studant       Person      @relation(fields: [studantId], references: [id])
-  class         CourseClass @relation(fields: [courseClassId], references: [id])
-  active        Boolean     @default(true)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  studantId     String      @db.ObjectId
-  courseClassId String      @db.ObjectId
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  studant         Person            @relation(fields: [studantId], references: [id])
+  class           CourseClass       @relation(fields: [courseClassId], references: [id])
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  studantId       String            @db.ObjectId
+  courseClassId   String            @db.ObjectId
+  StudantOnLesson StudantOnLesson[]
 
+  @@index([studantId, courseClassId, createdAt(sort: Desc)])
   @@map("StudantOnClasses")
 }
 
 model StudantOnLesson {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  studant        Person       @relation(fields: [studantId], references: [id])
-  lesson         CourseLesson @relation(fields: [courseLessonId], references: [id])
-  active         Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  studantId      String       @db.ObjectId
-  courseLessonId String       @db.ObjectId
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  studant        Person         @relation(fields: [studantId], references: [id])
+  lesson         CourseLesson   @relation(fields: [courseLessonId], references: [id])
+  studantOnClass StudantOnClass @relation(fields: [studantOnClassId], references: [id])
 
+  presence         Boolean?  @default(false)
+  eadTime          String?   @default("0")
+  eadStatus        String?   @default("UNSUBSCRIBED")
+  eadViewDate      DateTime?
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  studantId        String    @db.ObjectId
+  courseLessonId   String    @db.ObjectId
+  studantOnClassId String    @db.ObjectId
+
+  @@index([courseLessonId, eadStatus, studantId, createdAt(sort: Desc)])
   @@map("StudantOnLessons")
 }
 
 model CourseLibrary {
   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
   name               String
+  slug               String?
   writer             String
   image              String
   required           Boolean              @default(true)
@@ -402,6 +418,7 @@ model CourseLibrary {
   CourseLibraryQuest CourseLibraryQuest[]
   CourseReading      CourseReading[]
 
+  @@index([slug, writer, courseId, createdAt(sort: Desc)])
   @@map("CourseLibraries")
 }
 
@@ -416,6 +433,7 @@ model CourseLibraryQuest {
   CourseLibraryQuestOption CourseLibraryQuestOption[]
   CourseReadingResponse    CourseReadingResponse[]
 
+  @@index([courseLibraryId, createdAt(sort: Desc)])
   @@map("CourseLibraryQuests")
 }
 
@@ -430,6 +448,7 @@ model CourseLibraryQuestOption {
   courseLibraryQuestId  String                  @db.ObjectId
   CourseReadingResponse CourseReadingResponse[]
 
+  @@index([courseLibraryQuestId, createdAt(sort: Desc)])
   @@map("CourseLibraryQuestOptions")
 }
 
@@ -446,6 +465,7 @@ model CourseReading {
   courseLibraryId       String                  @db.ObjectId
   CourseReadingResponse CourseReadingResponse[]
 
+  @@index([stap, courseLibraryId, studantId, result, createdAt(sort: Desc)])
   @@map("CourseReadings")
 }
 
@@ -462,6 +482,7 @@ model CourseReadingResponse {
   courseLibraryQuestId       String                   @db.ObjectId
   courseLibraryQuestOptionId String                   @db.ObjectId
 
+  @@index([courseLibraryQuestId, courseLibraryQuestOptionId, createdAt(sort: Desc)])
   @@map("CourseReadingResponses")
 }
 
@@ -478,6 +499,7 @@ model CourseEvaluation {
   CourseEvaluationQuest    CourseEvaluationQuest[]
   CourseEvaluationProgress CourseEvaluationProgress[]
 
+  @@index([courseId, createdAt(sort: Desc)])
   @@map("CourseEvaluation")
 }
 
@@ -493,6 +515,7 @@ model CourseEvaluationQuest {
   CourseEvaluationQuestOption      CourseEvaluationQuestOption[]
   CourseEvaluationProgressResponse CourseEvaluationProgressResponse[]
 
+  @@index([courseEvaluationId, createdAt(sort: Desc)])
   @@map("CourseEvaluationQuests")
 }
 
@@ -507,6 +530,7 @@ model CourseEvaluationQuestOption {
   courseEvaluationQuestId          String                             @db.ObjectId
   CourseEvaluationProgressResponse CourseEvaluationProgressResponse[]
 
+  @@index([courseEvaluationQuestId, createdAt(sort: Desc)])
   @@map("CourseEvaluationQuestOptions")
 }
 
@@ -523,6 +547,7 @@ model CourseEvaluationProgress {
   courseEvaluationId               String                             @db.ObjectId
   CourseEvaluationProgressResponse CourseEvaluationProgressResponse[]
 
+  @@index([stap, studantId, courseEvaluationId, result, createdAt(sort: Desc)])
   @@map("CourseEvaluationProgress")
 }
 
@@ -539,5 +564,6 @@ model CourseEvaluationProgressResponse {
   courseEvaluationQuestId       String                      @db.ObjectId
   courseEvaluationQuestOptionId String                      @db.ObjectId
 
+  @@index([courseEvaluationProgressId, courseEvaluationQuestId, courseEvaluationQuestOptionId, createdAt(sort: Desc)])
   @@map("CourseEvaluationProgressResponses")
 }

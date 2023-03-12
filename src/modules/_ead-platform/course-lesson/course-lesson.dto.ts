@@ -7,5 +7,6 @@ export type CourseLessonDTO = {
   type?: string;
   videoIdentify?: string;
   courseId: string;
+  teacherId: string;
   active?: boolean;
 };

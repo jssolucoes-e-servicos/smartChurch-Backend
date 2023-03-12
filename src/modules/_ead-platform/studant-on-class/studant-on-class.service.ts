@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Console } from 'console';
 import { PrismaService } from 'src/databases/PrismaService';
 import { StudantOnClassDTO } from 'src/modules/_ead-platform/studant-on-class/studant-on-class.dto';
 import { RegisterDeleted, RegisterNotExists } from 'src/utils/results';
@@ -54,6 +55,7 @@ export class StudantOnClassService {
             select: {
               name: true,
               image: true,
+              slug: true,
               CourseLesson: {
                 select: {
                   id: true,
@@ -83,6 +85,53 @@ export class StudantOnClassService {
     }
   }
 
+  async findOneByClassTag(tag: string) {
+    try {
+      return this.prisma.courseClass.findFirst({
+        where: {
+          slug: tag,
+        },
+        select: {
+          id: true,
+          name: true,
+          active: true,
+          createdAt: true,
+          course: {
+            select: {
+              name: true,
+              image: true,
+              slug: true,
+              CourseLesson: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  description: true,
+                  isVideo: true,
+                  type: true,
+                  active: true,
+                  StudantOnLesson: {
+                    select: {
+                      id: true,
+                    },
+                  },
+                  LessonFile: {
+                    select: {
+                      id: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async findOneByStudant(id: string) {
     try {
       return this.prisma.studantOnClass.findMany({
@@ -95,6 +144,7 @@ export class StudantOnClassService {
           class: {
             select: {
               id: true,
+              slug: true,
               name: true,
               createdAt: true,
               course: {

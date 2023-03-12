@@ -38,6 +38,11 @@ export class StudantOnClassController {
     return this.studantOnClassService.findOneByClass(id);
   }
 
+  @Get('by-class-tag/:tag')
+  async findOneByClassTag(@Param('tag') tag: string) {
+    return this.studantOnClassService.findOneByClassTag(tag);
+  }
+
   @Post()
   async create(@Body() data: StudantOnClassDTO) {
     return this.studantOnClassService.create(data);

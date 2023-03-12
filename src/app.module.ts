@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { join, resolve } from 'path';
 // Modules for secirity
 import { AuthRecoveryModule } from './modules/_security/auth-recovery/auth-recovery.module';
 import { AuthSessionModule } from './modules/_security/auth-session/auth-session.module';
@@ -49,7 +51,22 @@ import { TeacherModule } from './modules/_ead-platform/teacher/teacher.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ServeStaticModule.forRoot(
+      (() => {
+        const publicDir = resolve('./public/');
+        const servePath = '/storage';
+
+        return {
+          rootPath: publicDir,
+          serveRoot: servePath,
+          exclude: ['/api*'],
+        };
+      })(),
+    ),
     AuthModule,
+    AuthTfaModule,
+    AuthSessionModule,
+    AuthRecoveryModule,
     CellModule,
     ChurchLinkModule,
     CellsNetworkModule,
@@ -75,9 +92,6 @@ import { TeacherModule } from './modules/_ead-platform/teacher/teacher.module';
     CourseEvaluationQuestOptionModule,
     CourseEvaluationProgressModule,
     CourseEvaluationProgressResponseModule,
-    AuthTfaModule,
-    AuthSessionModule,
-    AuthRecoveryModule,
     PersonAdressModule,
     PersonPhoneModule,
     PersonFamilyModule,

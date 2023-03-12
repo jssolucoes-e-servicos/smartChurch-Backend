@@ -27,6 +27,11 @@ export class CourseLessonController {
     return this.courseLessonService.findOne(id);
   }
 
+  @Get('find-by-tag/:tag')
+  async findByTag(@Param('tag') tag: string) {
+    return this.courseLessonService.findByTag(tag);
+  }
+
   @Post()
   async create(@Body() data: CourseLessonDTO) {
     return this.courseLessonService.create(data);

@@ -33,6 +33,98 @@ export class CourseLessonService {
         where: {
           id,
         },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          isVideo: true,
+          videoPlatform: true,
+          type: true,
+          videoIdentify: true,
+          active: true,
+          course: {
+            select: {
+              id: true,
+              curseGroup: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              bio: true,
+              person: {
+                select: {
+                  id: true,
+                  name: true,
+                  genre: true,
+                  email: true,
+                  photo: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async findByTag(tag: string) {
+    try {
+      return this.prisma.courseLesson.findFirst({
+        where: {
+          slug: tag,
+          active: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          isVideo: true,
+          videoPlatform: true,
+          type: true,
+          videoIdentify: true,
+          LessonFile: {
+            select: {
+              id: true,
+              format: true,
+              name: true,
+              url: true,
+            },
+          },
+          course: {
+            select: {
+              id: true,
+              curseGroup: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              bio: true,
+              person: {
+                select: {
+                  id: true,
+                  name: true,
+                  genre: true,
+                  email: true,
+                  photo: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   //create a nest factory
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   //configure this wwagger
   const config = new DocumentBuilder()
     .setTitle('smartChurch API')
@@ -15,7 +16,7 @@ async function bootstrap() {
     .addTag('church')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('doc', app, document);
+  SwaggerModule.setup('docs', app, document);
   //config cors
   app.enableCors({
     origin: '*',
@@ -23,7 +24,6 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
-  //const port = parseInt(process.env.PORT);
   await app.listen(AppModule.port || 3111);
 }
 bootstrap();

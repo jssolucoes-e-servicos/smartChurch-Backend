@@ -39,19 +39,6 @@ export class LessonFileService {
     }
   }
 
-  async findByLesson(lessonId: string) {
-    try {
-      return this.prisma.lessonFile.findMany({
-        where: {
-          courseLessonId: lessonId,
-          active: true,
-        },
-      });
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
   async update(id: string, data: LessonFileDTO) {
     try {
       const DataExists = await this.prisma.lessonFile.findUnique({
